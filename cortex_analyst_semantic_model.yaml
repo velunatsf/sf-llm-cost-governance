@@ -1,0 +1,402 @@
+name: cortex_analyst
+tables:
+  - name: STORAGE_USAGE
+    description: Daily storage usage in bytes
+    base_table:
+      database: SNOWFLAKE
+      schema: ACCOUNT_USAGE
+      table: STORAGE_USAGE
+    primary_key:
+      columns:
+        - USAGE_DATE
+    time_dimensions:
+      - name: USAGE_DATE
+        expr: USAGE_DATE
+        description: Date of storage usage
+        unique: true
+        data_type: date
+    measures:
+      - name: STORAGE_BYTES
+        expr: STORAGE_BYTES
+        description: Total storage usage in bytes for the given day
+        default_aggregation: sum
+        data_type: number
+      - name: STAGE_BYTES
+        expr: STAGE_BYTES
+        description: Total stage storage usage in bytes for the given day
+        default_aggregation: sum
+        data_type: number
+      - name: FAILSAFE_BYTES
+        expr: FAILSAFE_BYTES
+        description: Total failsafe storage usage in bytes for the given day
+        default_aggregation: sum
+        data_type: number
+      - name: HYBRID_TABLE_STORAGE_BYTES
+        expr: HYBRID_TABLE_STORAGE_BYTES
+        description: Total hybrid table storage usage in bytes for the given day
+        default_aggregation: sum
+        data_type: number
+      - name: TOTAL_STORAGE
+        expr: STORAGE_BYTES + STAGE_BYTES + FAILSAFE_BYTES + HYBRID_TABLE_STORAGE_BYTES
+        description: Total storage usage in bytes for the given day
+        default_aggregation: sum
+        data_type: number
+
+  - name: WAREHOUSE_LOAD_HISTORY
+    description: Utilization metrics for Snowflake warehouses
+    base_table:
+      database: SNOWFLAKE
+      schema: ACCOUNT_USAGE
+      table: WAREHOUSE_LOAD_HISTORY
+    primary_key:
+      columns:
+        - START_TIME
+        - END_TIME
+        - WAREHOUSE_ID
+        - WAREHOUSE_NAME
+    time_dimensions:
+      - name: START_TIME
+        expr: START_TIME
+        description: Start time of the warehouse activity
+        data_type: timestamp
+      - name: END_TIME
+        expr: END_TIME
+        description: End time of the warehouse activity
+        data_type: timestamp
+    measures:
+      - name: AVG_RUNNING
+        expr: AVG_RUNNING
+        description: Average running time for the warehouse in the given time period
+        default_aggregation: sum
+        data_type: number
+      - name: AVG_QUEUED_LOAD
+        expr: AVG_QUEUED_LOAD
+        description: Average queued load time for the warehouse in the given time period
+        default_aggregation: sum
+        data_type: number
+      - name: AVG_QUEUED_PROVISIONING
+        expr: AVG_QUEUED_PROVISIONING
+        description: Average queued provisioning time for the warehouse in the given time period
+        default_aggregation: sum
+        data_type: number
+      - name: AVG_BLOCKED
+        expr: AVG_BLOCKED
+        description: Average blocked time for the warehouse in the given time period
+        default_aggregation: sum
+        data_type: number
+    dimensions:
+      - name: WAREHOUSE_ID
+        expr: WAREHOUSE_ID
+        description: warehouse id
+        data_type: number
+      - name: WAREHOUSE_NAME
+        expr: WAREHOUSE_NAME
+        description: warehouse name
+        data_type: text
+
+  - name: AUTOMATIC_CLUSTERING_HISTORY
+    description: Automatic clustering credit usage
+    base_table:
+      database: SNOWFLAKE
+      schema: ACCOUNT_USAGE
+      table: AUTOMATIC_CLUSTERING_HISTORY
+    primary_key:
+      columns:
+        - START_TIME
+        - END_TIME
+        - TABLE_ID
+        - TABLE_NAME
+        - SCHEMA_ID
+        - SCHEMA_NAME
+        - DATABASE_ID
+        - DATABASE_NAME
+    time_dimensions:
+      - name: START_TIME
+        expr: START_TIME
+        description: Start time of clustering activity
+        data_type: timestamp
+      - name: END_TIME
+        expr: END_TIME
+        description: End time of the clustering activity
+        data_type: timestamp
+    measures:
+      - name: CREDITS_USED
+        expr: CREDITS_USED
+        description: Total credits used for clustering
+        default_aggregation: sum
+        data_type: number
+      - name: NUM_BYTES_RECLUSTERED
+        expr: NUM_BYTES_RECLUSTERED
+        description: Number of bytes reclustered
+        default_aggregation: sum
+        data_type: number
+      - name: NUM_rows_RECLUSTERED
+        expr: NUM_rows_RECLUSTERED
+        description: Number of rows reclustered
+        default_aggregation: sum
+        data_type: number
+    dimensions:
+      - name: TABLE_ID
+        expr: TABLE_ID
+        description: table id
+        data_type: number
+      - name: SCHEMA_ID
+        expr: SCHEMA_ID
+        description: schema id
+        data_type: number
+      - name: DATABASE_ID
+        expr: DATABASE_ID
+        description: database id
+        data_type: number
+      - name: TABLE_NAME
+        expr: TABLE_NAME
+        description: table name
+        data_type: text
+      - name: SCHEMA_NAME
+        expr: SCHEMA_NAME
+        description: schema name
+        data_type: text
+      - name: DATABASE_NAME
+        expr: DATABASE_NAME
+        description: database name
+        data_type: text
+
+  - name: USAGE_IN_CURRENCY_DAILY
+    description: Organizational cost breakdown by account
+    base_table:
+      database: SNOWFLAKE
+      schema: ORGANIZATION_USAGE
+      table: USAGE_IN_CURRENCY_DAILY
+    time_dimensions:
+      - name: USAGE_DATE
+        expr: USAGE_DATE
+        description: Date of cost usage
+        data_type: date
+    dimensions:
+      - name: ORGANIZATION_NAME
+        expr: ORGANIZATION_NAME
+        description: Name of the organization
+        data_type: text
+      - name: CONTRACT_NUMBER
+        expr: CONTRACT_NUMBER
+        description: Contract number associated with the account
+        data_type: fixed
+      - name: ACCOUNT_NAME
+        expr: ACCOUNT_NAME
+        description: Name of the account
+        data_type: text
+      - name: ACCOUNT_LOCATOR
+        expr: ACCOUNT_LOCATOR
+        description: Unique account locator
+        data_type: text
+      - name: REGION
+        expr: REGION
+        description: Region of the account
+        data_type: text
+      - name: SERVICE_LEVEL
+        expr: SERVICE_LEVEL
+        description: Service level for the account
+        data_type: text
+      - name: USAGE_TYPE
+        expr: USAGE_TYPE
+        description: Type of usage
+        data_type: text
+      - name: USAGE
+        expr: USAGE
+        description: Total usage
+        data_type: fixed
+      - name: CURRENCY
+        expr: CURRENCY
+        description: Currency type used for billing
+        data_type: text
+      - name: BALANCE_SOURCE
+        expr: BALANCE_SOURCE
+        description: Source of the balance
+        data_type: text
+      - name: BILLING_TYPE
+        expr: BILLING_TYPE
+        description: Type of billing applied
+        data_type: text
+      - name: RATING_TYPE
+        expr: RATING_TYPE
+        description: Rating type for billing
+        data_type: text
+      - name: SERVICE_TYPE
+        expr: SERVICE_TYPE
+        description: Type of service provided
+        data_type: text
+      - name: IS_ADJUSTMENT
+        expr: IS_ADJUSTMENT
+        description: Indicates if the record is an adjustment
+        data_type: boolean
+    measures:
+      - name: USAGE_IN_CURRENCY
+        expr: USAGE_IN_CURRENCY
+        description: Total cost in currency
+        default_aggregation: sum
+        data_type: number
+
+
+  - name: QUERY_HISTORY
+    description: Query performance metrics
+    base_table:
+      database: SNOWFLAKE
+      schema: ACCOUNT_USAGE
+      table: QUERY_HISTORY
+
+    time_dimensions:
+      - name: START_TIME
+        expr: START_TIME
+        description: Start time of the query execution
+        data_type: timestamp
+      - name: END_TIME
+        expr: END_TIME
+        description: End time of the query execution
+        data_type: timestamp
+    dimensions:
+      - name: QUERY_TEXT
+        expr: QUERY_TEXT
+        description: Full text of the query
+        data_type: text
+      - name: DATABASE_ID
+        expr: DATABASE_ID
+        description: Identifier for the database
+        data_type: fixed
+      - name: DATABASE_NAME
+        expr: DATABASE_NAME
+        description: Name of the database
+        data_type: text
+      - name: SCHEMA_ID
+        expr: SCHEMA_ID
+        description: Identifier for the schema
+        data_type: fixed
+      - name: SCHEMA_NAME
+        expr: SCHEMA_NAME
+        description: Name of the schema
+        data_type: text
+      - name: QUERY_TYPE
+        expr: QUERY_TYPE
+        description: Type of the query
+        data_type: text
+      - name: SESSION_ID
+        expr: SESSION_ID
+        description: Session identifier
+        data_type: fixed
+      - name: USER_NAME
+        expr: USER_NAME
+        description: Name of the user who executed the query
+        data_type: text
+      - name: ROLE_NAME
+        expr: ROLE_NAME
+        description: Role of the user
+        data_type: text
+      - name: WAREHOUSE_ID
+        expr: WAREHOUSE_ID
+        description: Identifier for the warehouse
+        data_type: fixed
+      - name: WAREHOUSE_NAME
+        expr: WAREHOUSE_NAME
+        description: Name of the warehouse
+        data_type: text
+      - name: WAREHOUSE_SIZE
+        expr: WAREHOUSE_SIZE
+        description: Size of the warehouse
+        data_type: text
+      - name: EXECUTION_STATUS
+        expr: EXECUTION_STATUS
+        description: Execution status of the query
+        data_type: text
+      - name: ERROR_CODE
+        expr: ERROR_CODE
+        description: Error code, if any
+        data_type: text
+    measures:
+      - name: TOTAL_ELAPSED_TIME
+        expr: TOTAL_ELAPSED_TIME
+        description: Total elapsed time for query execution
+        data_type: fixed
+      - name: BYTES_SCANNED
+        expr: BYTES_SCANNED
+        description: Number of bytes scanned by the query
+        data_type: fixed
+      - name: PARTITIONS_SCANNED
+        expr: PARTITIONS_SCANNED
+        description: Number of partitions scanned
+        data_type: fixed
+      - name: PARTITIONS_TOTAL
+        expr: PARTITIONS_TOTAL
+        description: Total number of partitions
+        data_type: fixed
+      - name: SCAN_RATIO
+        expr: PARTITIONS_SCANNED / PARTITIONS_TOTAL
+        description: Ratio of partitions scanned to total partitions
+        default_aggregation: avg
+        data_type: number
+
+verified_queries:
+  - name: "total storage usage"
+    question: "What was my total storage cost for the last month?"
+    sql: |
+      SELECT USAGE_DATE,
+             SUM (STORAGE_BYTES + 
+                    STAGE_BYTES + 
+                    FAILSAFE_BYTES + 
+                    HYBRID_TABLE_STORAGE_BYTES
+             )/POWER(1024,3) AS STORAGE_USAGE_IN_GB
+      FROM SNOWFLAKE.ACCOUNT_USAGE.STORAGE_USAGE
+      GROUP BY 1
+      ORDER BY 1;
+
+  - name: "warehouse utilization"
+    question: "How is the utilization for a specific warehouse?"
+    sql: |
+      SELECT TO_DATE(START_TIME) as THE_DATE,
+             WAREHOUSE_NAME,
+             SUM(AVG_RUNNING) AS SUM_RUNNING,
+             SUM(AVG_QUEUED_LOAD) AS SUM_QUEUED
+      FROM SNOWFLAKE.ACCOUNT_USAGE.WAREHOUSE_LOAD_HISTORY
+      WHERE START_TIME >= DATEADD(month,-1,CURRENT_TIMESTAMP())
+      AND WAREHOUSE_NAME='COMPUTE_WH'
+      GROUP BY ALL
+      ORDER BY 1;
+
+  - name: "auto cluster credit usage"
+    question: "What is the Auto Cluster credit usage for the last one month?"
+    sql: |
+      SELECT TO_DATE(START_TIME) as THE_DATE,
+             DATABASE_NAME,
+             SCHEMA_NAME,
+             TABLE_NAME,
+             SUM(CREDITS_USED) as CREDITS_USED
+      FROM SNOWFLAKE.ACCOUNT_USAGE.AUTOMATIC_CLUSTERING_HISTORY
+      WHERE START_TIME >= DATEADD(month,-1,current_timestamp())
+      GROUP BY ALL
+      ORDER BY 1;
+
+  - name: "organizational costs"
+    question: "What are the total costs in dollars for the organization, broken down by account?"
+    sql: |
+      SELECT account_name,
+             usage_date,
+             ROUND(SUM(usage_in_currency), 2) as usage_in_currency
+      FROM snowflake.organization_usage.usage_in_currency_daily
+      WHERE usage_date > DATEADD(month,-1,CURRENT_TIMESTAMP())
+      GROUP BY ALL
+      ORDER BY 1,2;
+
+  - name: "large table scan queries"
+    question: "Show top 100 queries with large table scan?"
+    sql: |
+      SELECT query_id,
+             user_name,
+             warehouse_name,
+             warehouse_size,
+             partitions_scanned,
+             partitions_total,
+             (partitions_scanned / partitions_total) AS SCAN_RATIO
+      FROM SNOWFLAKE.ACCOUNT_USAGE.QUERY_HISTORY
+      WHERE (partitions_scanned / partitions_total) > 0.8
+      AND START_TIME > DATEADD(day,-7,CURRENT_TIMESTAMP())
+      AND partitions_total > 100
+      ORDER BY SCAN_RATIO DESC
+      LIMIT 100;
